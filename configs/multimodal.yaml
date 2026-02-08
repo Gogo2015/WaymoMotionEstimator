@@ -1,0 +1,30 @@
+# Multi-modal trajectory prediction experiment
+experiment:
+  name: "multimodal_baseline"
+  description: "Multi-modal prediction with 6 trajectory modes"
+
+# Data configuration
+data:
+  train_dir: "./training_data"
+  test_dir: "./test_data"
+  past_steps: 10
+  future_steps: 80
+  batch_size: 64
+  train_split: 0.9
+
+# Training configuration
+training:
+  epochs: 10
+  learning_rate: 0.001
+  optimizer: "adam"
+
+# Model configuration
+model:
+  name: "MultiModalConvMLP"  # Must match class name in models/
+  num_modes: 6  # Number of trajectory modes to predict
+
+# Logging configuration
+logging:
+  log_dir: "logs"
+  save_dir: "trained_models"
+  tensorboard: true

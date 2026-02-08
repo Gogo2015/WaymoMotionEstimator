@@ -18,6 +18,10 @@ class Config:
             else:
                 setattr(self, key, value)
 
+    def get(self, key, default=None):
+        """Get attribute with default fallback."""
+        return getattr(self, key, default)
+
     def to_dict(self):
         """Convert config back to dictionary."""
         result = {}
