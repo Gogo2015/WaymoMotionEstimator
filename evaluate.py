@@ -5,7 +5,8 @@ import tensorflow as tf
 import numpy as np
 from dataLoader import get_data
 from models.ConvMLP import ConvMLP
-from visualize import visualize_trajectory
+from models.MultiModalConvMLP import MultiModalConvMLP
+from visualize import visualize_trajectory, visualize_multimodal_trajectory
 from metrics import mse, ade, fde
 
 PAST_STEPS = 10
@@ -13,7 +14,8 @@ FUTURE_STEPS = 80
 DATA_DIR = "./test_data"
 
 MODELS = [
-    ConvMLP
+    #ConvMLP,
+    MultiModalConvMLP
 ]
 
 
@@ -36,6 +38,31 @@ def visualize(model_to_visualize):
         true_future_np = future.numpy()[0]
         save_path = f"./gifs/{model_name}/agent_traj{i}.gif"
         visualize_trajectory(past_np, true_future_np, pred_future, save_path)
+
+
+def visualize_multimodal(model_to_visualize):
+    """Visualize multi-modal predictions"""
+    test_ds = get_data(DATA_DIR, BATCH_SIZE=1, training=False)
+    
+    model_name = model_to_visualize.__name__
+    model_path = f"trained_models/{model_name}.keras"
+    model = tf.keras.models.load_model(model_path)
+    
+    os.makedirs(f"./gifs/{model_name}", exist_ok=True)
+    
+    # Generate 5 gifs
+    for i, (past, future, valid) in enumerate(test_ds.take(5)):
+        pred_trajectories, confidences = model(past, training=False)
+        
+        # Get first sample from batch
+        pred_traj_np = pred_trajectories.numpy()[0]  # (K, 80, 2)
+        conf_np = confidences.numpy()[0]  # (K,)
+        past_np = past.numpy()[0]
+        true_future_np = future.numpy()[0]
+        
+        save_path = f"./gifs/{model_name}/test_agent_{i}.gif"
+        visualize_multimodal_trajectory(past_np, true_future_np, 
+                                       pred_traj_np, conf_np, save_path)
 
 
 def test_model(model_to_test):
@@ -87,4 +114,7 @@ if __name__ == "__main__":
             test_model(model)
     else:
         for model in MODELS:
-            visualize(model)
+            if model == MultiModalConvMLP:
+                visualize_multimodal(model)
+            else:
+                visualize(model)
