@@ -1,10 +1,6 @@
 import os
 import tensorflow as tf
 
-PAST_STEPS = 10
-FUTURE_STEPS = 80
-BATCH_SIZE = 64
-
 state_features = {
     'state/future/valid':
         tf.io.FixedLenFeature([128, 80], tf.int64, default_value=None),
@@ -26,15 +22,15 @@ features_description = {}
 features_description.update(state_features)
 
 
-def transform(single_example, features):
+def transform(single_example, features, past_steps, future_steps):
     """
-    Input: 
+    Input:
     single_example: single example gotten from flat_map function
 
     Output:
     transformed: data split into (past, future, future_valid)
-        - past: [N, 10, 2]
-        - future: [N, 80, 2]
+        - past: [N, past_steps, 2]
+        - future: [N, future_steps, 2]
 
     """
 
@@ -58,10 +54,10 @@ def transform(single_example, features):
     future_valid = tf.boolean_mask(future_valid, mask)
 
     n = tf.shape(past_x)[0]
-    
+
     #Translate agent's position so last point at origin
-    anchor_x = past_x[:, -1] if PAST_STEPS > 0 else tf.zeros((n,), tf.float32)
-    anchor_y = past_y[:, -1] if PAST_STEPS > 0 else tf.zeros((n,), tf.float32)
+    anchor_x = past_x[:, -1] if past_steps > 0 else tf.zeros((n,), tf.float32)
+    anchor_y = past_y[:, -1] if past_steps > 0 else tf.zeros((n,), tf.float32)
     past_x -= anchor_x[:, None]
     past_y -= anchor_y[:, None]
     future_x -= anchor_x[:, None]
@@ -85,34 +81,45 @@ def transform(single_example, features):
 
     return tf.data.Dataset.from_tensor_slices((past, future, future_valid))
 
-def get_data(DATA_DIR, BATCH_SIZE, training=True):
+def get_data(data_dir, batch_size, past_steps=10, future_steps=80, train_split=0.9, training=True):
+    """
+    Load and process trajectory data from TFRecord files.
+
+    Args:
+        data_dir: Directory containing TFRecord files
+        batch_size: Batch size for training
+        past_steps: Number of past timesteps
+        future_steps: Number of future timesteps to predict
+        train_split: Fraction of data to use for training (vs validation)
+        training: If True, return train and val datasets; if False, return test dataset
+    """
     #Get dataset of all files in data folder
     files = [
-            os.path.join(DATA_DIR, f) 
-            for f in os.listdir(DATA_DIR)
+            os.path.join(data_dir, f)
+            for f in os.listdir(data_dir)
             if ".tfrecord-" in f
             ]
     dataset = tf.data.TFRecordDataset(files)
 
-    dataset = dataset.flat_map(lambda x: transform(x, features_description))
+    dataset = dataset.flat_map(lambda x: transform(x, features_description, past_steps, future_steps))
 
     dataset = dataset.shuffle(2048)
     dataset_size = sum(1 for _ in dataset)
 
     if training:
-        train_size = int(0.9 * dataset_size)
+        train_size = int(train_split * dataset_size)
 
         train_ds = dataset.take(train_size)
         val_ds = dataset.skip(train_size)
 
-        train_ds = train_ds.batch(BATCH_SIZE).prefetch(tf.data.AUTOTUNE)
-        val_ds = val_ds.batch(BATCH_SIZE).prefetch(tf.data.AUTOTUNE)
+        train_ds = train_ds.batch(batch_size).prefetch(tf.data.AUTOTUNE)
+        val_ds = val_ds.batch(batch_size).prefetch(tf.data.AUTOTUNE)
 
         return train_ds, val_ds
-    
+
     else:
-        test_ds = dataset.batch(BATCH_SIZE).prefetch(tf.data.AUTOTUNE)
-        
+        test_ds = dataset.batch(batch_size).prefetch(tf.data.AUTOTUNE)
+
         return test_ds
 
 

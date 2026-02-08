@@ -1,0 +1,29 @@
+# Default Experiment Configuration
+experiment:
+  name: "baseline"
+  description: "Baseline trajectory prediction experiment"
+
+# Data configuration
+data:
+  train_dir: "./training_data"
+  test_dir: "./test_data"
+  past_steps: 10
+  future_steps: 80
+  batch_size: 64
+  train_split: 0.9
+
+# Training configuration
+training:
+  epochs: 10
+  learning_rate: 0.001
+  optimizer: "adam"
+
+# Model configuration
+model:
+  name: "ConvMLP"  # Must match class name in models/
+
+# Logging configuration
+logging:
+  log_dir: "logs"
+  save_dir: "trained_models"
+  tensorboard: true

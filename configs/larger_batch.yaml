@@ -1,0 +1,25 @@
+# Experiment with larger batch size
+experiment:
+  name: "larger_batch_exp"
+  description: "Testing with larger batch size for faster training"
+
+data:
+  train_dir: "./training_data"
+  test_dir: "./test_data"
+  past_steps: 10
+  future_steps: 80
+  batch_size: 128  # Doubled from baseline
+  train_split: 0.9
+
+training:
+  epochs: 10
+  learning_rate: 0.001
+  optimizer: "adam"
+
+model:
+  name: "ConvMLP"
+
+logging:
+  log_dir: "logs"
+  save_dir: "trained_models"
+  tensorboard: true

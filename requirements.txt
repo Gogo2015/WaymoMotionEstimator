@@ -6,3 +6,4 @@ opencv-python-headless
 tqdm
 ipython
 jupyter
+pyyaml

@@ -1,25 +1,20 @@
 import os
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # 0 = all, 1 = info, 2 = warning, 3 = error
 
+import argparse
 import datetime
 import tensorflow as tf
 from dataLoader import get_data
 from metrics import mse, ade, fde
-
+from config import load_config, save_config
 
 # import models
 from models.ConvMLP import ConvMLP
 
-LOG_DIR = "logs"
-
-MODELS = [
-    ConvMLP
-]
-
-DATA_DIR = "./training_data"
-
-PAST_STEPS = 10
-FUTURE_STEPS = 80
+# Model registry - add new models here
+MODEL_REGISTRY = {
+    "ConvMLP": ConvMLP
+}
 
 @tf.function
 def train_step(model, optimizer, past, future, valid):
@@ -34,25 +29,52 @@ def train_step(model, optimizer, past, future, valid):
 
     return loss, batch_ade, batch_fde
 
-def train_model(model_to_train, BATCH_SIZE=64, epochs=10):
+def train_model(config):
+    """
+    Train a model using the provided configuration.
+
+    Args:
+        config: Config object with experiment parameters
+    """
+    # Get model class from registry
+    if config.model.name not in MODEL_REGISTRY:
+        raise ValueError(f"Model {config.model.name} not found in MODEL_REGISTRY")
+    model_class = MODEL_REGISTRY[config.model.name]
+
     #get dataset
-    train_ds, val_ds = get_data(DATA_DIR, BATCH_SIZE)
+    train_ds, val_ds = get_data(
+        data_dir=config.data.train_dir,
+        batch_size=config.data.batch_size,
+        past_steps=config.data.past_steps,
+        future_steps=config.data.future_steps,
+        train_split=config.data.train_split,
+        training=True
+    )
 
     #build_model
-    model = model_to_train(PAST_STEPS, FUTURE_STEPS)
-    model.build(input_shape=(None, PAST_STEPS, 2))
+    model = model_class(config.data.past_steps, config.data.future_steps)
+    model.build(input_shape=(None, config.data.past_steps, 2))
 
     #Initialize for TensorBoard
     current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    train_log_dir = os.path.join(LOG_DIR, current_time, "train")
-    val_log_dir = os.path.join(LOG_DIR, current_time, "val")
+    exp_name = f"{config.experiment.name}_{current_time}"
+    train_log_dir = os.path.join(config.logging.log_dir, exp_name, "train")
+    val_log_dir = os.path.join(config.logging.log_dir, exp_name, "val")
 
     train_writer = tf.summary.create_file_writer(train_log_dir)
     val_writer = tf.summary.create_file_writer(val_log_dir)
 
-    optimizer = tf.keras.optimizers.Adam(1e-3)
+    # Save config with this experiment
+    save_config(config, os.path.join(config.logging.log_dir, exp_name))
 
-    for epoch in range(epochs):
+    optimizer = tf.keras.optimizers.Adam(config.training.learning_rate)
+
+    print(f"\nStarting experiment: {config.experiment.name}")
+    print(f"Description: {config.experiment.description}")
+    print(f"Model: {config.model.name}")
+    print(f"Batch size: {config.data.batch_size}, Epochs: {config.training.epochs}\n")
+
+    for epoch in range(config.training.epochs):
         epoch_loss, epoch_ade, epoch_fde = 0.0, 0.0, 0.0
         num_batches = 0
 
@@ -99,12 +121,25 @@ def train_model(model_to_train, BATCH_SIZE=64, epochs=10):
 
         print(f"Val: loss {val_loss:.4f} | ADE {val_ade:.4f} | FDE {val_fde:.4f}")
 
-        model_name = model_to_train.__name__
-        os.makedirs("trained_models", exist_ok=True)
-        save_path = f"trained_models/{model_name}.keras"
-
-        model.save(save_path)
+    # Save final model
+    os.makedirs(config.logging.save_dir, exist_ok=True)
+    save_path = os.path.join(config.logging.save_dir, f"{exp_name}.keras")
+    model.save(save_path)
+    print(f"\nModel saved to: {save_path}")
+    print(f"Experiment logs: {os.path.join(config.logging.log_dir, exp_name)}")
 
 if __name__ == "__main__":
-    for model in MODELS:
-        train_model(model)
+    parser = argparse.ArgumentParser(description="Train trajectory prediction model")
+    parser.add_argument(
+        "--config",
+        type=str,
+        default="configs/default.yaml",
+        help="Path to config file (default: configs/default.yaml)"
+    )
+    args = parser.parse_args()
+
+    # Load config
+    config = load_config(args.config)
+
+    # Train model
+    train_model(config)
