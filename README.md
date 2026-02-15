@@ -164,6 +164,31 @@ WaymoProject/
 └── trained_models/
 ```
 
+## Cloud Training (Google Cloud Platform)
+
+### Quick Start - GCP
+
+```bash
+# 1. Edit your project ID in gcp_setup.sh (or gcp_setup.ps1 on Windows)
+# 2. Run automated setup
+chmod +x gcp_setup.sh
+./gcp_setup.sh
+
+# 3. SSH into VM and mount Waymo dataset
+gcloud compute ssh waymo-training-vm --zone=us-central1-a
+
+# On VM: Copy setup script first (from local machine in another terminal)
+# gcloud compute scp gcp/setup_waymo_data.sh waymo-training-vm:~/ --zone=us-central1-a
+
+# Then on VM:
+chmod +x setup_waymo_data.sh && ./setup_waymo_data.sh
+
+# 4. Start training on full WOMD
+python train_model.py --config configs/waymo_public.yaml
+```
+
+---
+
 ## Usage Instructions
 
 ### Training with Config System
@@ -243,11 +268,11 @@ Basic architecture (no LSTM/GRU/Transformer)
 Small training subset
 
 ## Recent Improvements
-✅ **Multi-modal predictions** - Implemented MultiModalConvMLP with 6 trajectory modes
+**Multi-modal predictions** - Implemented MultiModalConvMLP with 6 trajectory modes
 
-✅ **Config-based experiment management** - YAML configs for reproducible experiments
+**Config-based experiment management** - YAML configs for reproducible experiments
 
-✅ **Winner-takes-all loss** - Better training for multi-modal outputs
+**Winner-takes-all loss** - Better training for multi-modal outputs
 
 ## Future Work
 Add map + road graph context
