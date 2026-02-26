@@ -1,0 +1,38 @@
+# Waymo Public Dataset Configuration
+# Uses Waymo Open Motion Dataset from public GCS bucket
+# Run gcp/setup_waymo_data.sh on your VM first to mount the dataset
+
+experiment:
+  name: "waymo_public_baseline"
+  description: "Training on Waymo's public dataset (1TB+ of motion data)"
+
+# Data configuration - using Waymo's public bucket
+data:
+  # Option 1: Use mounted public bucket
+  train_dir: "/home/USER/waymo_public/training"
+  test_dir: "/home/USER/waymo_public/testing"
+
+  # Option 2: If you copied subset to your bucket, use:
+  # train_dir: "/home/USER/waymo_data/training_data"
+  # test_dir: "/home/USER/waymo_data/test_data"
+
+  past_steps: 10
+  future_steps: 80
+  batch_size: 256      # Larger batch for full dataset
+  train_split: 0.9
+
+# Training configuration
+training:
+  epochs: 50
+  learning_rate: 0.001
+  optimizer: "adam"
+
+# Model configuration
+model:
+  name: "ConvMLP"
+
+# Logging configuration
+logging:
+  log_dir: "logs"
+  save_dir: "trained_models"
+  tensorboard: true

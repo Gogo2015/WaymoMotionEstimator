@@ -1,0 +1,31 @@
+# GCP Experiment Configuration
+# Optimized for Google Cloud Platform training
+
+experiment:
+  name: "gcp_baseline"
+  description: "Baseline experiment running on GCP with GPU acceleration"
+
+# Data configuration - using GCS mounted paths
+data:
+  train_dir: "/home/USER/waymo_data/training_data"  # Update USER with your username
+  test_dir: "/home/USER/waymo_data/test_data"      # Update USER with your username
+  past_steps: 10
+  future_steps: 80
+  batch_size: 128      # Larger batch size for GPU
+  train_split: 0.9
+
+# Training configuration
+training:
+  epochs: 50           # More epochs since we have GPU
+  learning_rate: 0.001
+  optimizer: "adam"
+
+# Model configuration
+model:
+  name: "ConvMLP"
+
+# Logging configuration
+logging:
+  log_dir: "logs"
+  save_dir: "trained_models"
+  tensorboard: true

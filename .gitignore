@@ -1,5 +1,34 @@
 #Ignore data files
 *.tfrecord*
 trained_models/
+trained_models_gcp/
 *.cpython*
 logs/
+checkpoints/
+
+# Data directories
+training_data/
+test_data/
+data/
+waymo_data/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary
+*.tmp
+*.log
+tmp/
