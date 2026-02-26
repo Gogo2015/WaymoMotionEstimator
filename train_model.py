@@ -94,6 +94,11 @@ def train_model(config):
 
     optimizer = tf.keras.optimizers.Adam(config.training.learning_rate)
 
+    checkpoint_dir = os.path.join(config.logging.save_dir, "checkpoints", exp_name)
+    os.makedirs(checkpoint_dir, exist_ok=True)
+    checkpoint = tf.train.Checkpoint(optimizer=optimizer, model=model)
+    checkpoint_manager = tf.train.CheckpointManager(checkpoint, checkpoint_dir, max_to_keep=3)
+
     print(f"\nStarting experiment: {config.experiment.name}")
     print(f"Description: {config.experiment.description}")
     print(f"Model: {config.model.name}")
@@ -167,6 +172,10 @@ def train_model(config):
             else:
                 tf.summary.scalar("ADE", val_metric1, step=epoch)
                 tf.summary.scalar("FDE", val_metric2, step=epoch)
+
+        if (epoch + 1) % 5 == 0:
+            ckpt_path = checkpoint_manager.save()
+            print(f"  Checkpoint saved: {ckpt_path}")
 
         if is_multimodal:
             print(f"Val: total {val_loss:.4f} | control {val_metric1:.4f} | intent {val_metric2:.4f}")

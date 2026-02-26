@@ -102,24 +102,19 @@ def get_data(data_dir, batch_size, past_steps=10, future_steps=80, train_split=0
     dataset = tf.data.TFRecordDataset(files)
 
     dataset = dataset.flat_map(lambda x: transform(x, features_description, past_steps, future_steps))
-
+    
     dataset = dataset.shuffle(2048)
-    dataset_size = sum(1 for _ in dataset)
 
     if training:
-        train_size = int(train_split * dataset_size)
-
-        train_ds = dataset.take(train_size)
-        val_ds = dataset.skip(train_size)
+        # Use deterministic split without counting
+        train_ds = dataset.enumerate().filter(lambda i, _: i % 10 < int(train_split * 10)).map(lambda i, x: x)
+        val_ds = dataset.enumerate().filter(lambda i, _: i % 10 >= int(train_split * 10)).map(lambda i, x: x)
 
         train_ds = train_ds.batch(batch_size).prefetch(tf.data.AUTOTUNE)
         val_ds = val_ds.batch(batch_size).prefetch(tf.data.AUTOTUNE)
-
         return train_ds, val_ds
-
     else:
         test_ds = dataset.batch(batch_size).prefetch(tf.data.AUTOTUNE)
-
         return test_ds
 
 

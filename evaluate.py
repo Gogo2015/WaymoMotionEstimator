@@ -66,11 +66,10 @@ def visualize_multimodal(model_to_visualize):
 
 
 def test_model(model_to_test):
-    #get dataset
     test_ds = get_data(DATA_DIR, BATCH_SIZE=64, training=False)
+    is_multimodal = (model_to_test == MultiModalConvMLP)
 
-    #build_model
-    model = model_to_test(PAST_STEPS, FUTURE_STEPS)
+    model = model_to_test(PAST_STEPS, FUTURE_STEPS) if not is_multimodal else model_to_test()
     model_name = model_to_test.__name__
     model_path = f"trained_models/{model_name}.keras"
 
@@ -84,26 +83,43 @@ def test_model(model_to_test):
     num_batches = 0
 
     for past, future, valid in test_ds:
-        pred = model(past, training=True)
-        loss = mse(future, pred, valid)
-        batch_ade = ade(future, pred, valid)
-        batch_fde = fde(future, pred, valid)
+        if is_multimodal:
+            pred_traj, conf = model(past, training=False)  # (B, K, 80, 2), (B, K)
 
-        # add batch metrics
-        avg_loss += float(loss.numpy())
-        avg_ade  += float(batch_ade.numpy())
-        avg_fde  += float(batch_fde.numpy())
+            # minADE: pick best mode per sample
+            diff = pred_traj - tf.expand_dims(future, 1)  # (B, K, 80, 2)
+            dist = tf.norm(diff, axis=-1)  # (B, K, 80)
+            valid_f = tf.cast(valid, tf.float32)
+            masked_dist = dist * tf.expand_dims(valid_f, 1)  # (B, K, 80)
+            num_valid = tf.reduce_sum(valid_f, axis=1, keepdims=True) + 1e-6  # (B, 1)
+            ade_per_mode = tf.reduce_sum(masked_dist, axis=2) / num_valid  # (B, K)
+            best_mode = tf.argmin(ade_per_mode, axis=1)  # (B,)
+
+            # Gather best trajectory per sample
+            batch_idx = tf.range(tf.shape(past)[0], dtype=tf.int64)
+            gather_idx = tf.stack([batch_idx, best_mode], axis=1)
+            best_pred = tf.gather_nd(pred_traj, gather_idx)  # (B, 80, 2)
+
+            batch_loss = float(mse(future, best_pred, valid).numpy())
+            batch_ade = float(ade(future, best_pred, valid).numpy())
+            batch_fde = float(fde(future, best_pred, valid).numpy())
+        else:
+            pred = model(past, training=False)
+            batch_loss = float(mse(future, pred, valid).numpy())
+            batch_ade = float(ade(future, pred, valid).numpy())
+            batch_fde = float(fde(future, pred, valid).numpy())
+
+        avg_loss += batch_loss
+        avg_ade += batch_ade
+        avg_fde += batch_fde
         num_batches += 1
 
-        print(f"loss {loss:.4f} | ADE {batch_ade:.4f} | FDE {batch_fde:.4f}")
-    
+        print(f"loss {batch_loss:.4f} | ADE {batch_ade:.4f} | FDE {batch_fde:.4f}")
 
-    # average over the epoch
     avg_loss /= num_batches
-    avg_ade  /= num_batches
-    avg_fde  /= num_batches
-    print("\n\n")
-    print(f"Avg loss {avg_loss:.4f} | Avg ADE {avg_ade:.4f} | Avg FDE {avg_fde:.4f}")
+    avg_ade /= num_batches
+    avg_fde /= num_batches
+    print(f"\nAvg loss {avg_loss:.4f} | Avg ADE {avg_ade:.4f} | Avg FDE {avg_fde:.4f}")
 
 
 if __name__ == "__main__":
