@@ -96,11 +96,11 @@ def get_data(data_dir, batch_size, past_steps=10, future_steps=80, train_split=0
     #Get dataset of all files in data folder
     if data_dir.startswith("gs://"):
         if "training" in data_dir:
-            num_files, prefix = 1000, "training"
+            num_files, prefix = 1000, "training_tfexample"
         elif "testing" in data_dir:
-            num_files, prefix = 150, "testing"
+            num_files, prefix = 150, "testing_tfexample"
         else:
-            num_files, prefix = 150, "validation"
+            num_files, prefix = 150, "validation_tfexample"
 
         files = [
             f"{data_dir}/{prefix}.tfrecord-{i:05d}-of-{num_files:05d}"
