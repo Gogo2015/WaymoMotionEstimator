@@ -8,7 +8,7 @@ set -e  # Exit on error
 # CONFIGURATION - EDIT THESE VALUES
 # ============================================================================
 
-PROJECT_ID="your-gcp-project-id"  # REQUIRED: Your GCP project ID
+PROJECT_ID="waymomotionestimator"  # REQUIRED: Your GCP project ID
 ZONE="us-central1-a"              # Region/zone for VM
 VM_NAME="waymo-training-vm"       # Name of your VM
 MACHINE_TYPE="n1-standard-8"      # 8 vCPUs, 30GB RAM
