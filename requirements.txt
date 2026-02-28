@@ -1,5 +1,4 @@
 protobuf==3.20.*
-waymo-open-dataset-tf-2-12-0==1.6.7
 pandas
 matplotlib
 opencv-python-headless
