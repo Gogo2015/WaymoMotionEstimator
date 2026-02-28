@@ -181,7 +181,7 @@ if [ "$VM_EXISTS" != "true" ]; then
         --accelerator=type=$GPU_TYPE,count=$GPU_COUNT \
         --boot-disk-size=$BOOT_DISK_SIZE \
         --boot-disk-type=pd-ssd \
-        --image-family=common-cu121-debian-11-py310 \
+        --image-family=tf-ent-latest-gpu \
         --image-project=deeplearning-platform-release \
         --maintenance-policy=TERMINATE \
         --scopes=https://www.googleapis.com/auth/cloud-platform \
