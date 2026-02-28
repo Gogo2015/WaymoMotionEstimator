@@ -7,8 +7,8 @@ experiment:
 
 # Data configuration - using Waymo's public bucket
 data:
-  train_dir: "gs://waymo_open_dataset_motion_v_1_2_0/uncompressed/scenario/training"
-  test_dir: "gs://waymo_open_dataset_motion_v_1_2_0/uncompressed/scenario/testing"
+  train_dir: "gs://waymo_open_dataset_motion_v_1_3_1/uncompressed/tf_example/training"
+  test_dir: "gs://waymo_open_dataset_motion_v_1_3_1/uncompressed/tf_example/testing"
   past_steps: 10
   future_steps: 80
   batch_size: 128      # Larger batch for full dataset
