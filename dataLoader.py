@@ -94,12 +94,22 @@ def get_data(data_dir, batch_size, past_steps=10, future_steps=80, train_split=0
         training: If True, return train and val datasets; if False, return test dataset
     """
     #Get dataset of all files in data folder
-    files = [
-            os.path.join(data_dir, f)
-            for f in os.listdir(data_dir)
-            if ".tfrecord-" in f
-            ]
-    dataset = tf.data.TFRecordDataset(files)
+    if data_dir.startswith("gs://"):
+        if "training" in data_dir:
+            num_files, prefix = 1000, "training"
+        elif "testing" in data_dir:
+            num_files, prefix = 150, "testing"
+        else:
+            num_files, prefix = 150, "validation"
+
+        files = [
+            f"{data_dir}/{prefix}.tfrecord-{i:05d}-of-{num_files:05d}"
+            for i in range(50)
+        ]
+    else:
+        files = tf.io.gfile.glob(os.path.join(data_dir, "*tfrecord*"))
+
+    dataset = tf.data.TFRecordDataset(files, num_parallel_reads=tf.data.AUTOTUNE)
 
     dataset = dataset.flat_map(lambda x: transform(x, features_description, past_steps, future_steps))
     

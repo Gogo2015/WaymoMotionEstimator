@@ -9,7 +9,7 @@ set -e  # Exit on error
 # ============================================================================
 
 PROJECT_ID="waymomotionestimator"  # REQUIRED: Your GCP project ID
-ZONE="us-central1-a"              # Region/zone for VM
+ZONE="us-west1-b"              # Region/zone for VM
 VM_NAME="waymo-training-vm"       # Name of your VM
 MACHINE_TYPE="n1-standard-8"      # 8 vCPUs, 30GB RAM
 GPU_TYPE="nvidia-tesla-t4"        # Options: nvidia-tesla-t4, nvidia-tesla-v100, nvidia-tesla-a100
@@ -181,7 +181,7 @@ if [ "$VM_EXISTS" != "true" ]; then
         --accelerator=type=$GPU_TYPE,count=$GPU_COUNT \
         --boot-disk-size=$BOOT_DISK_SIZE \
         --boot-disk-type=pd-ssd \
-        --image-family=tf-ent-latest-gpu \
+        --image-family=common-cu128-ubuntu-2204-nvidia-570 \
         --image-project=deeplearning-platform-release \
         --maintenance-policy=TERMINATE \
         --scopes=https://www.googleapis.com/auth/cloud-platform \
