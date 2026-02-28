@@ -7,16 +7,16 @@ experiment:
 
 # Data configuration - using GCS mounted paths
 data:
-  train_dir: "/home/USER/waymo_data/training_data"  # Update USER with your username
-  test_dir: "/home/USER/waymo_data/test_data"      # Update USER with your username
+  train_dir: "/home/USER/waymo_data/training_data"
+  test_dir: "/home/USER/waymo_data/test_data"
   past_steps: 10
   future_steps: 80
-  batch_size: 128      # Larger batch size for GPU
+  batch_size: 128
   train_split: 0.9
 
 # Training configuration
 training:
-  epochs: 50           # More epochs since we have GPU
+  epochs: 30
   learning_rate: 0.001
   optimizer: "adam"
 
