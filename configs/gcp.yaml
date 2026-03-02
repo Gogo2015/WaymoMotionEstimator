@@ -1,5 +1,6 @@
 # GCP Experiment Configuration
 # Optimized for Google Cloud Platform training
+#gcloud compute ssh waymo-training-vm --zone=us-west1-b
 
 experiment:
   name: "gcp_baseline"

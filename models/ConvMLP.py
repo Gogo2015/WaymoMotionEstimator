@@ -16,6 +16,15 @@ class ConvMLP(tf.keras.Model):
 
         self.reshape = tf.keras.layers.Reshape((FUTURE_STEPS, 2), name="future_xy")
 
+    def get_config(self):
+        config = super().get_config()
+        config.update({
+            "PAST_STEPS": self.PAST_STEPS,
+            "FUTURE_STEPS": self.FUTURE_STEPS,
+            "activation": self.activation,
+        })
+        return config
+
 
     def call(self, input):
         """

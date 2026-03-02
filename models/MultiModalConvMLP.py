@@ -21,6 +21,15 @@ class MultiModalConvMLP(Model):
         
         # Mode confidence predictor
         self.confidence_head = layers.Dense(num_modes, activation='softmax')
+
+    def get_config(self):
+        config = super().get_config()
+        config.update({
+            "num_modes": self.num_modes,
+            "past_steps": self.past_steps,
+            "future_steps": self.future_steps,
+        })
+        return config
     
     def call(self, inputs, training=False):
         # inputs: (batch, 10, 2)

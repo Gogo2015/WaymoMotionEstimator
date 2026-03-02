@@ -1,0 +1,32 @@
+# Waymo Public Dataset Configuration
+# Uses Waymo Open Motion Dataset from public GCS bucket
+
+experiment:
+  name: "waymo_public_multimodal"
+  description: "Training on Waymo's public dataset (1TB+ of motion data)"
+
+# Data configuration - using Waymo's public bucket
+data:
+  train_dir: "gs://waymo_open_dataset_motion_v_1_3_1/uncompressed/tf_example/training"
+  test_dir: "gs://waymo_open_dataset_motion_v_1_3_1/uncompressed/tf_example/testing"
+  past_steps: 10
+  future_steps: 80
+  batch_size: 128
+  train_split: 0.9
+
+# Training configuration
+training:
+  epochs: 30
+  learning_rate: 0.001
+  optimizer: "adam"
+
+# Model configuration
+model:
+  name: "MultiModalConvMLP"
+  num_modes: 6  # Number of trajectory modes to predict
+
+# Logging configuration
+logging:
+  log_dir: "logs"
+  save_dir: "trained_models"
+  tensorboard: true
