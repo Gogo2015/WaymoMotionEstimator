@@ -79,14 +79,19 @@ def test_model(model_to_test):
     model_name = model_to_test.__name__
     model_path = f"trained_models/{model_name}.keras"
 
-    try:
-        model = tf.keras.models.load_model(model_path, custom_objects={
-            'ConvMLP': ConvMLP,
-            'MultiModalConvMLP': MultiModalConvMLP
-        })
-    except FileNotFoundError:
-        print("File not found")
+    # Load weights from checkpoint
+    checkpoint_dirs = {
+        'ConvMLP': 'trained_models/checkpoints/waymo_public_baseline_20260228-213805/ckpt-6',
+        'MultiModalConvMLP': 'trained_models/checkpoints/waymo_public_multimodal_20260305-035556/ckpt-6',
+    }
+
+    if model_name not in checkpoint_dirs:
+        print(f"No checkpoint found for {model_name}")
         return 0
+
+    ckpt = tf.train.Checkpoint(model=model)
+    ckpt.restore(checkpoint_dirs[model_name]).expect_partial()
+    print(f"Loaded {model_name} from checkpoint")
 
     avg_loss, avg_ade, avg_fde = 0.0, 0.0, 0.0
     num_batches = 0
