@@ -6,6 +6,7 @@ class MultiModalConvMLP(Model):
         super().__init__()
         self.num_modes = num_modes
         self.future_steps = future_steps
+        self.past_steps = past_steps
         
         # Encoder
         self.conv1 = layers.Conv1D(64, 3, padding='causal', activation='relu')
