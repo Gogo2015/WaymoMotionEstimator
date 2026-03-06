@@ -11,7 +11,7 @@ from metrics import mse, ade, fde
 
 PAST_STEPS = 10
 FUTURE_STEPS = 80
-DATA_DIR = "gs://waymo_open_dataset_motion_v_1_3_1/uncompressed/tf_example/testing"
+DATA_DIR = "gs://waymo_open_dataset_motion_v_1_3_1/uncompressed/tf_example/validation"
 
 MODELS = [
     ConvMLP,
