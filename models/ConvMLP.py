@@ -6,6 +6,7 @@ class ConvMLP(tf.keras.Model):
 
         self.PAST_STEPS = PAST_STEPS
         self.FUTURE_STEPS = FUTURE_STEPS
+        self.activation = activation
 
         #Conv Layers
         self.conv_layer_1 = tf.keras.layers.Conv1D(64, kernel_size=3, padding="causal", activation=activation)
