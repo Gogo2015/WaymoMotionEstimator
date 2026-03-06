@@ -14,7 +14,7 @@ FUTURE_STEPS = 80
 DATA_DIR = "gs://waymo_open_dataset_motion_v_1_3_1/uncompressed/tf_example/testing"
 
 MODELS = [
-    #ConvMLP,
+    ConvMLP,
     MultiModalConvMLP
 ]
 
@@ -27,7 +27,10 @@ def visualize(model_to_visualize):
 
     # Load trained model
     model_path = f"trained_models/{model_name}.keras"
-    model = tf.keras.models.load_model(model_path)
+    model = tf.keras.models.load_model(model_path, custom_objects={
+        'ConvMLP': ConvMLP,
+        'MultiModalConvMLP': MultiModalConvMLP
+    })
 
     os.makedirs(f"./gifs/{model_name}", exist_ok=True)
 
@@ -46,7 +49,10 @@ def visualize_multimodal(model_to_visualize):
     
     model_name = model_to_visualize.__name__
     model_path = f"trained_models/{model_name}.keras"
-    model = tf.keras.models.load_model(model_path)
+    model = tf.keras.models.load_model(model_path, custom_objects={
+        'ConvMLP': ConvMLP,
+        'MultiModalConvMLP': MultiModalConvMLP
+    })
     
     os.makedirs(f"./gifs/{model_name}", exist_ok=True)
     
@@ -74,7 +80,10 @@ def test_model(model_to_test):
     model_path = f"trained_models/{model_name}.keras"
 
     try:
-        model = tf.keras.models.load_model(model_path)
+        model = tf.keras.models.load_model(model_path, custom_objects={
+            'ConvMLP': ConvMLP,
+            'MultiModalConvMLP': MultiModalConvMLP
+        })
     except FileNotFoundError:
         print("File not found")
         return 0
