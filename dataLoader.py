@@ -102,9 +102,10 @@ def get_data(data_dir, batch_size, past_steps=10, future_steps=80, train_split=0
         else:
             num_files, prefix = 150, "validation_tfexample"
 
+        num_to_use = min(250, num_files)
         files = [
             f"{data_dir}/{prefix}.tfrecord-{i:05d}-of-{num_files:05d}"
-            for i in range(250)
+            for i in range(num_to_use)
         ]
     else:
         files = tf.io.gfile.glob(os.path.join(data_dir, "*tfrecord*"))
