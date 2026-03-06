@@ -21,7 +21,7 @@ MODELS = [
 
 def visualize(model_to_visualize):
     # Load test dataset
-    test_ds = get_data(DATA_DIR, BATCH_SIZE=1, training=False)
+    test_ds = get_data(DATA_DIR, batch_size=1, training=False)
 
     model_name = model_to_visualize.__name__  
 
@@ -42,7 +42,7 @@ def visualize(model_to_visualize):
 
 def visualize_multimodal(model_to_visualize):
     """Visualize multi-modal predictions"""
-    test_ds = get_data(DATA_DIR, BATCH_SIZE=1, training=False)
+    test_ds = get_data(DATA_DIR, batch_size=1, training=False)
     
     model_name = model_to_visualize.__name__
     model_path = f"trained_models/{model_name}.keras"
@@ -66,7 +66,7 @@ def visualize_multimodal(model_to_visualize):
 
 
 def test_model(model_to_test):
-    test_ds = get_data(DATA_DIR, BATCH_SIZE=64, training=False)
+    test_ds = get_data(DATA_DIR, batch_size=64, training=False)
     is_multimodal = (model_to_test == MultiModalConvMLP)
 
     model = model_to_test(PAST_STEPS, FUTURE_STEPS) if not is_multimodal else model_to_test()
