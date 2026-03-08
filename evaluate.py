@@ -47,14 +47,15 @@ def visualize(model_to_visualize):
 def visualize_multimodal(model_to_visualize):
     """Visualize multi-modal predictions"""
     test_ds = get_data(DATA_DIR, batch_size=1, training=False)
-    
     model_name = model_to_visualize.__name__
-    model_path = f"trained_models/{model_name}.keras"
-    model = tf.keras.models.load_model(model_path, custom_objects={
-        'ConvMLP': ConvMLP,
-        'MultiModalConvMLP': MultiModalConvMLP
-    })
-    
+
+    model = model_to_visualize()
+    model.build(input_shape=(None, PAST_STEPS, 2))
+
+    ckpt = tf.train.Checkpoint(model=model)
+    ckpt.restore('trained_models/checkpoints/waymo_public_multimodal_20260305-035556/ckpt-6').expect_partial()
+    print(f"Loaded {model_name} from checkpoint")
+
     os.makedirs(f"./gifs/{model_name}", exist_ok=True)
     
     # Generate 5 gifs
