@@ -22,15 +22,16 @@ MODELS = [
 def visualize(model_to_visualize):
     # Load test dataset
     test_ds = get_data(DATA_DIR, batch_size=1, training=False)
+    model_name = model_to_visualize.__name__
 
-    model_name = model_to_visualize.__name__  
+    # Build model first
+    model = model_to_visualize(PAST_STEPS, FUTURE_STEPS)
+    model.build(input_shape=(None, PAST_STEPS, 2))
 
-    # Load trained model
-    model_path = f"trained_models/{model_name}.keras"
-    model = tf.keras.models.load_model(model_path, custom_objects={
-        'ConvMLP': ConvMLP,
-        'MultiModalConvMLP': MultiModalConvMLP
-    })
+    # Load from checkpoint
+    ckpt = tf.train.Checkpoint(model=model)
+    ckpt.restore('trained_models/checkpoints/waymo_public_baseline_20260228-213805/ckpt-6').expect_partial()
+    print(f"Loaded {model_name} from checkpoint")
 
     os.makedirs(f"./gifs/{model_name}", exist_ok=True)
 
