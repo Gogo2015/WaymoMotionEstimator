@@ -53,6 +53,17 @@ def transform(single_example, features, past_steps, future_steps):
     future_y = tf.boolean_mask(future_y, mask)
     future_valid = tf.boolean_mask(future_valid, mask)
 
+    past_valid = parsed['state/past/valid']
+    past_valid = tf.boolean_mask(past_valid, mask)
+
+    # Only keep agents with ALL past steps valid
+    all_past_valid = tf.reduce_all(tf.cast(past_valid, tf.bool), axis=1)
+    past_x = tf.boolean_mask(past_x, all_past_valid)
+    past_y = tf.boolean_mask(past_y, all_past_valid)
+    future_x = tf.boolean_mask(future_x, all_past_valid)
+    future_y = tf.boolean_mask(future_y, all_past_valid)
+    future_valid = tf.boolean_mask(future_valid, all_past_valid)
+
     n = tf.shape(past_x)[0]
 
     #Translate agent's position so last point at origin
