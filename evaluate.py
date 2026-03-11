@@ -3,6 +3,7 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # 0 = all, 1 = info, 2 = warning, 3 = 
 
 import tensorflow as tf
 import numpy as np
+import glob
 from dataLoader import get_data
 from models.ConvMLP import ConvMLP
 from models.MultiModalConvMLP import MultiModalConvMLP
@@ -18,6 +19,23 @@ MODELS = [
     MultiModalConvMLP
 ]
 
+def get_latest_checkpoint(model_name):
+    prefix_map = {
+        'ConvMLP': 'waymo_public_baseline_*',
+        'MultiModalConvMLP': 'waymo_public_multimodal_*',
+    }
+    pattern = f"trained_models/checkpoints/{prefix_map[model_name]}"
+    dirs = sorted(glob.glob(pattern))
+    if not dirs:
+        print(f"No checkpoint dirs found for {model_name}")
+        return None
+    ckpt_path = tf.train.latest_checkpoint(dirs[-1])
+    if ckpt_path is None:
+        print(f"No checkpoint files in {dirs[-1]}")
+        return None
+    print(f"Using checkpoint: {ckpt_path}")
+    return ckpt_path
+
 
 def visualize(model_to_visualize):
     # Load test dataset
@@ -30,7 +48,10 @@ def visualize(model_to_visualize):
 
     # Load from checkpoint
     ckpt = tf.train.Checkpoint(model=model)
-    ckpt.restore('trained_models/checkpoints/waymo_public_baseline_20260228-213805/ckpt-6').expect_partial()
+    ckpt_path = get_latest_checkpoint(model_name)
+    if ckpt_path is None:
+        return
+    ckpt.restore(ckpt_path).expect_partial()
     print(f"Loaded {model_name} from checkpoint")
 
     os.makedirs(f"./gifs/{model_name}", exist_ok=True)
@@ -53,7 +74,10 @@ def visualize_multimodal(model_to_visualize):
     model.build(input_shape=(None, PAST_STEPS, 2))
 
     ckpt = tf.train.Checkpoint(model=model)
-    ckpt.restore('trained_models/checkpoints/waymo_public_multimodal_20260305-035556/ckpt-6').expect_partial()
+    ckpt_path = get_latest_checkpoint(model_name)
+    if ckpt_path is None:
+        return
+    ckpt.restore(ckpt_path).expect_partial()
     print(f"Loaded {model_name} from checkpoint")
 
     os.makedirs(f"./gifs/{model_name}", exist_ok=True)
@@ -82,17 +106,12 @@ def test_model(model_to_test):
     model_path = f"trained_models/{model_name}.keras"
 
     # Load weights from checkpoint
-    checkpoint_dirs = {
-        'ConvMLP': 'trained_models/checkpoints/waymo_public_baseline_20260228-213805/ckpt-6',
-        'MultiModalConvMLP': 'trained_models/checkpoints/waymo_public_multimodal_20260305-035556/ckpt-6',
-    }
-
-    if model_name not in checkpoint_dirs:
-        print(f"No checkpoint found for {model_name}")
-        return 0
+    ckpt_path = get_latest_checkpoint(model_name)
+    if ckpt_path is None:
+        return
 
     ckpt = tf.train.Checkpoint(model=model)
-    ckpt.restore(checkpoint_dirs[model_name]).expect_partial()
+    ckpt.restore(ckpt_path).expect_partial()
     print(f"Loaded {model_name} from checkpoint")
 
     avg_loss, avg_ade, avg_fde = 0.0, 0.0, 0.0
