@@ -4,7 +4,7 @@
 
 This project implements trajectory prediction models using the Waymo Open Motion Dataset, aiming to predict an agent's future positions based on its past trajectory. The models take the past 10 (x, y) coordinates of a single agent and predict the next 80 positions (a future horizon of roughly 8 seconds at 10 Hz). This task is crucial for autonomous driving systems, as accurate motion forecasting of vehicles and pedestrians helps in planning and safety.
 
-The project implements two architectures: a single-mode baseline (ConvMLP) and a multi-modal extension (MultiModalConvMLP) that predicts multiple possible future trajectories with associated confidence scores. Both models were trained on the full Waymo Open Motion Dataset using a GPU-accelerated Google Compute Engine VM, streaming data directly from Google Cloud Storage. The models work on individual agent tracks without scene context or map information, demonstrating what can be achieved with purely historical trajectory data.
+The project implements two architectures: a single-mode baseline (ConvMLP) and a multi-modal extension (MultiModalConvMLP) that predicts multiple possible future trajectories with associated confidence scores. Both models were trained on trained on 25% of the WOMD training partition (250 TFRecords) using a GPU-accelerated Google Compute Engine VM, streaming data directly from Google Cloud Storage. The models work on individual agent tracks without scene context or map information, demonstrating what can be achieved with purely historical trajectory data.
 
 See Technical Report: [Report](./ConvMLPPaper.pdf)
 
